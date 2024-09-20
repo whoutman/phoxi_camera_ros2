@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(phoxi_camera)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -8,10 +10,10 @@ endif()
 # find dependencies
 
 set(DEPENDENCIES
-    rclcpp 
+    rclcpp
     rclpy
-    pcl_msgs 
-    pcl_conversions 
+    pcl_msgs
+    pcl_conversions
     sensor_msgs
     rclcpp_components
     cv_bridge
@@ -19,7 +21,7 @@ set(DEPENDENCIES
     nav_msgs
     tf2_ros
     tf2
-    tf2_geometry_msgs 
+    tf2_geometry_msgs
     OpenCV
     std_srvs
     PhoXi
@@ -28,9 +30,9 @@ set(DEPENDENCIES
     phoxi_msgs
     tf2_eigen
     Eigen3
-    PCL 
+    PCL
     diagnostic_updater
-    ) 
+    )
 
 
 
@@ -55,10 +57,10 @@ set(INCLUDES
 
 set(SOURCES
     src/RosInterface.cpp
-    src/PhoXiInterface.cpp    
+    src/PhoXiInterface.cpp
     )
-    
-    
+
+
 add_executable(phoxi_camera_node src/phoxi_camera_node.cpp)
 
 
@@ -70,7 +72,7 @@ add_library(${PROJECT_NAME} SHARED
 
 ament_target_dependencies(${PROJECT_NAME}
   ${DEPENDENCIES}
-)  
+)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   include
@@ -82,7 +84,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 
 
-target_link_libraries(phoxi_camera_node 
+target_link_libraries(phoxi_camera_node
   ${PROJECT_NAME}
   ${PHOXI_LIBRARY}
   ${PCL_LIBRARIES}
@@ -93,7 +95,7 @@ target_link_libraries(phoxi_camera_node
 
 install(TARGETS
   phoxi_camera_node
-  DESTINATION lib/${PROJECT_NAME})  
+  DESTINATION lib/${PROJECT_NAME})
 
 
 install(
@@ -103,12 +105,12 @@ install(
 
 install(TARGETS
 phoxi_camera
-DESTINATION lib) 
+DESTINATION lib)
 
 ament_export_dependencies(${DEPENDENCIES})
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-  
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
