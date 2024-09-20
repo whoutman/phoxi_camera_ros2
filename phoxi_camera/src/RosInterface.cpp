@@ -5,7 +5,6 @@ namespace phoxi_camera {
 
     RosInterface::RosInterface(const rclcpp::NodeOptions& options)
         : Node("phoxi_camera_node", options) {
- 
         this->declare_parameter<bool>("start_acquisition_", true);
         this->declare_parameter<bool>("stop_acquisition_", false);
 
@@ -65,8 +64,6 @@ namespace phoxi_camera {
         cb_handle_ = param_subscriber_->add_parameter_callback("organized_cloud_", cb);
 
 
-
-        
         //service
         getDeviceListService_ = this->create_service<phoxi_msgs::srv::GetDeviceList>("phoxi_camera/get_device_list", std::bind(&RosInterface::getDeviceList, this, std::placeholders::_1, std::placeholders::_2));
         isConnectedService_ = this->create_service<phoxi_msgs::srv::IsConnected>("phoxi_camera/is_connected", std::bind(&RosInterface::isConnected, this, std::placeholders::_1, std::placeholders::_2));
@@ -79,9 +76,9 @@ namespace phoxi_camera {
         stopAcquisitionServiceV2_ = this->create_service<phoxi_msgs::srv::Empty>("phoxi_camera/V2/stop_acquisition", std::bind(&RosInterface::stopAcquisitionV2, this, std::placeholders::_1, std::placeholders::_2));
         triggerImageService_ =this->create_service<phoxi_msgs::srv::TriggerImage>("phoxi_camera/trigger_image", std::bind(&RosInterface::triggerImage, this, std::placeholders::_1, std::placeholders::_2));
         getFrameService_ = this->create_service<phoxi_msgs::srv::GetFrame>("phoxi_camera/get_frame", std::bind(&RosInterface::getFrame, this, std::placeholders::_1, std::placeholders::_2));
-        saveFrameService_ = this->create_service<phoxi_msgs::srv::SaveFrame>("phoxi_camera/save_frame", std::bind(&RosInterface::saveFrame, this, std::placeholders::_1, std::placeholders::_2));  
+        saveFrameService_ = this->create_service<phoxi_msgs::srv::SaveFrame>("phoxi_camera/save_frame", std::bind(&RosInterface::saveFrame, this, std::placeholders::_1, std::placeholders::_2));
         connectCameraService_ = this->create_service<phoxi_msgs::srv::ConnectCamera>("phoxi_camera/connect_camera", std::bind(&RosInterface::connectCamera, this, std::placeholders::_1, std::placeholders::_2));
-        disconnectCameraService_ = this->create_service<std_srvs::srv::Empty>("phoxi_camera/disconnect_camera", std::bind(&RosInterface::disconnectCamera, this, std::placeholders::_1, std::placeholders::_2));  
+        disconnectCameraService_ = this->create_service<std_srvs::srv::Empty>("phoxi_camera/disconnect_camera", std::bind(&RosInterface::disconnectCamera, this, std::placeholders::_1, std::placeholders::_2));
         getHardwareIdentificationService_ = this->create_service<phoxi_msgs::srv::GetHardwareIdentification>("phoxi_camera/get_hardware_indentification", std::bind(&RosInterface::getHardwareIdentification, this, std::placeholders::_1, std::placeholders::_2));
         getSupportedCapturingModesService_ = this->create_service<phoxi_msgs::srv::GetSupportedCapturingModes>("phoxi_camera/get_supported_capturing_modes", std::bind(&RosInterface::getSupportedCapturingModes, this, std::placeholders::_1, std::placeholders::_2));
         getApiVersionService_ = this->create_service<phoxi_msgs::srv::GetString>("phoxi_camera/get_api_version", std::bind(&RosInterface::getApiVersion, this, std::placeholders::_1, std::placeholders::_2));
@@ -90,9 +87,6 @@ namespace phoxi_camera {
         setTransformationService_ = this->create_service<phoxi_msgs::srv::SetTransformationMatrix>("phoxi_camera/V2/set_coordinate_space", std::bind(&RosInterface::setTransformation, this, std::placeholders::_1, std::placeholders::_2));
         saveLastFrameService_ = this->create_service<phoxi_msgs::srv::SaveLastFrame>("phoxi_camera/V2/save_last_frame", std::bind(&RosInterface::saveLastFrame, this, std::placeholders::_1, std::placeholders::_2));
 
-        
-        
-        
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Ready to get_device_list");
 
         diagnosticTimer = this->create_wall_timer(5000ms, std::bind(&RosInterface::diagnosticTimerCallback, this));
@@ -102,9 +96,10 @@ namespace phoxi_camera {
 
         //connect to default scanner
         std::string scannerId;
-        scannerId = "2019-07-005-LC3";
+
+        this->get_parameter_or<std::string>("scanner_id_", scannerId, "2019-07-005-LC3");
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "scannerId id %s", scannerId.c_str());
-        if (scannerId == "2019-07-005-LC3" && !scannerId.empty()) {
+        if (!scannerId.empty()) {
             try {
                 RosInterface::connectCameraV2(scannerId);
                 RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Connected to %s", scannerId.c_str());
@@ -115,24 +110,18 @@ namespace phoxi_camera {
         }
         if (!PhoXiInterface::isConnected()) {
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Not Connected ");
-            
         }
-
-
-
-
-
     }
 
 
 
-    void 
+    void
     RosInterface::diagnosticTimerCallback() {
         // diagnosticUpdater.force_update();
     }
 
-    bool 
-    RosInterface::getDeviceList(const std::shared_ptr<phoxi_msgs::srv::GetDeviceList::Request> req, 
+    bool
+    RosInterface::getDeviceList(const std::shared_ptr<phoxi_msgs::srv::GetDeviceList::Request> req,
                                 std::shared_ptr<phoxi_msgs::srv::GetDeviceList::Response> res) {
         try {
             res->out_id = PhoXiInterface::cameraList();
@@ -145,11 +134,10 @@ namespace phoxi_camera {
             res->message = e.what();
         }
         return true;
- 
     }
 
     bool
-    RosInterface::connectCamera(const std::shared_ptr<phoxi_msgs::srv::ConnectCamera::Request> req, 
+    RosInterface::connectCamera(const std::shared_ptr<phoxi_msgs::srv::ConnectCamera::Request> req,
                               std::shared_ptr<phoxi_msgs::srv::ConnectCamera::Response> res) {
         try {
             RosInterface::connectCameraV2(req->camera_name);
@@ -168,7 +156,6 @@ namespace phoxi_camera {
         bool initFromConfig = false;
 
         RCLCPP_INFO(this->get_logger(), "init_from_config", initFromConfig);
-   
         if (initFromConfig) {
             // getDefaultDynamicReconfigureConfig(dynamicReconfigureConfig);
             // this->dynamicReconfigureCallback(dynamicReconfigureConfig, std::numeric_limits<uint32_t>::max());
@@ -181,15 +168,15 @@ namespace phoxi_camera {
 
 
 
-    bool 
-    RosInterface::isConnected(const std::shared_ptr<phoxi_msgs::srv::IsConnected::Request> req, 
+    bool
+    RosInterface::isConnected(const std::shared_ptr<phoxi_msgs::srv::IsConnected::Request> req,
                               std::shared_ptr<phoxi_msgs::srv::IsConnected::Response> res) {
         res->connected = PhoXiInterface::isConnected();
         return true;
     }
 
-    bool 
-    RosInterface::isConnectedV2(const std::shared_ptr<phoxi_msgs::srv::GetBool::Request> req, 
+    bool
+    RosInterface::isConnectedV2(const std::shared_ptr<phoxi_msgs::srv::GetBool::Request> req,
                                 std::shared_ptr<phoxi_msgs::srv::GetBool::Response> res) {
         res->value = PhoXiInterface::isConnected();
         res->message = OKRESPONSE; //todo tot este premysliet
@@ -197,15 +184,15 @@ namespace phoxi_camera {
         return true;
     }
 
-    bool 
-    RosInterface::isAcquiring(const std::shared_ptr<phoxi_msgs::srv::IsAcquiring::Request> req, 
+    bool
+    RosInterface::isAcquiring(const std::shared_ptr<phoxi_msgs::srv::IsAcquiring::Request> req,
                               std::shared_ptr<phoxi_msgs::srv::IsAcquiring::Response> res) {
         res->is_acquiring = PhoXiInterface::isAcquiring();
         return true;
     }
 
-    bool 
-    RosInterface::isAcquiringV2(const std::shared_ptr<phoxi_msgs::srv::GetBool::Request> req, 
+    bool
+    RosInterface::isAcquiringV2(const std::shared_ptr<phoxi_msgs::srv::GetBool::Request> req,
                                 std::shared_ptr<phoxi_msgs::srv::GetBool::Response> res) {
         res->value = PhoXiInterface::isAcquiring();
         res->message = OKRESPONSE; //todo tot este premysliet
@@ -215,12 +202,12 @@ namespace phoxi_camera {
 
 
 
-    bool 
-    RosInterface::startAcquisition(const std::shared_ptr<std_srvs::srv::Empty::Request> req, 
+    bool
+    RosInterface::startAcquisition(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
                                     std::shared_ptr<std_srvs::srv::Empty::Response> res) {
         try {
             PhoXiInterface::startAcquisition();
-            start_acquisition_ = true; 
+            start_acquisition_ = true;
             this->set_parameter(rclcpp::Parameter("start_acquisition_", start_acquisition_));
 
             start_acquisition_ = this->get_parameter("start_acquisition_").as_bool();
@@ -235,13 +222,13 @@ namespace phoxi_camera {
         return true;
     }
 
- 
 
-    bool 
-    RosInterface::startAcquisitionV2(const std::shared_ptr<phoxi_msgs::srv::Empty::Request> req, 
+
+    bool
+    RosInterface::startAcquisitionV2(const std::shared_ptr<phoxi_msgs::srv::Empty::Request> req,
                                      std::shared_ptr<phoxi_msgs::srv::Empty::Response> res) {
         try {
-            start_acquisition_ = true; 
+            start_acquisition_ = true;
             this->set_parameter(rclcpp::Parameter("start_acquisition_", start_acquisition_));
             // dynamicReconfigureConfig.start_acquisition = true;
             // dynamicReconfigureServer.updateConfig(dynamicReconfigureConfig);
@@ -256,11 +243,11 @@ namespace phoxi_camera {
     }
 
     bool
-    RosInterface::stopAcquisition(const std::shared_ptr<std_srvs::srv::Empty::Request> req, 
+    RosInterface::stopAcquisition(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
                                    std::shared_ptr<std_srvs::srv::Empty::Response> res) {
         try {
             PhoXiInterface::stopAcquisition();
-            start_acquisition_ = false; 
+            start_acquisition_ = false;
             this->set_parameter(rclcpp::Parameter("start_acquisition_", start_acquisition_));
             // dynamicReconfigureConfig.start_acquisition = false;
             // dynamicReconfigureServer.updateConfig(dynamicReconfigureConfig);
@@ -271,11 +258,11 @@ namespace phoxi_camera {
         return true;
     }
 
-    bool 
-    RosInterface::stopAcquisitionV2(const std::shared_ptr<phoxi_msgs::srv::Empty::Request> req, 
+    bool
+    RosInterface::stopAcquisitionV2(const std::shared_ptr<phoxi_msgs::srv::Empty::Request> req,
                                      std::shared_ptr<phoxi_msgs::srv::Empty::Response> res) {
         try {
-            start_acquisition_ = false; 
+            start_acquisition_ = false;
             this->set_parameter(rclcpp::Parameter("start_acquisition_", start_acquisition_));
             // dynamicReconfigureConfig.start_acquisition = false;
             // dynamicReconfigureServer.updateConfig(dynamicReconfigureConfig);
@@ -289,7 +276,7 @@ namespace phoxi_camera {
         return true;
     }
 
-    int 
+    int
     RosInterface::triggerImageid() {
         int id = PhoXiInterface::triggerImage(false);
         //update dynamic reconfigure
@@ -303,7 +290,7 @@ namespace phoxi_camera {
     }
 
     bool
-    RosInterface::triggerImage(const std::shared_ptr<phoxi_msgs::srv::TriggerImage::Request> req, 
+    RosInterface::triggerImage(const std::shared_ptr<phoxi_msgs::srv::TriggerImage::Request> req,
                                 std::shared_ptr<phoxi_msgs::srv::TriggerImage::Response> res) {
         try {
             res->id = RosInterface::triggerImageid();
@@ -316,7 +303,7 @@ namespace phoxi_camera {
         return true;
     }
 
-    
+
 
     pho::api::PFrame RosInterface::getPFrame(int id) {
         pho::api::PFrame frame = PhoXiInterface::getPFrame(id);
@@ -331,8 +318,8 @@ namespace phoxi_camera {
         return frame;
     }
 
-    bool 
-    RosInterface::getFrame(const std::shared_ptr<phoxi_msgs::srv::GetFrame::Request> req, 
+    bool
+    RosInterface::getFrame(const std::shared_ptr<phoxi_msgs::srv::GetFrame::Request> req,
                                 std::shared_ptr<phoxi_msgs::srv::GetFrame::Response> res) {
         try {
             pho::api::PFrame frame = getPFrame(req->in_id);
@@ -351,8 +338,8 @@ namespace phoxi_camera {
         return true;
     }
 
-    bool 
-    RosInterface::saveFrame(const std::shared_ptr<phoxi_msgs::srv::SaveFrame::Request> req, 
+    bool
+    RosInterface::saveFrame(const std::shared_ptr<phoxi_msgs::srv::SaveFrame::Request> req,
                                 std::shared_ptr<phoxi_msgs::srv::SaveFrame::Response> res) {
         try {
             pho::api::PFrame frame = RosInterface::getPFrame(req->in_id);
@@ -372,7 +359,7 @@ namespace phoxi_camera {
                 req->path.replace(pos, 1, home);
             }
             RCLCPP_INFO(this->get_logger(), "path: %s", req->path.c_str());
-            
+
             frame->SaveAsPly(req->path);
             res->message = OKRESPONSE;
             res->success = true;
@@ -399,7 +386,7 @@ namespace phoxi_camera {
         }
     }
 
-    
+
 
     std::string RosInterface::getTriggerMode(pho::api::PhoXiTriggerMode mode) {
         switch (mode) {
@@ -416,7 +403,7 @@ namespace phoxi_camera {
         }
     }
 
-    void 
+    void
     RosInterface::publishFrame(pho::api::PFrame frame) {
         if (!frame) {
             RCLCPP_WARN(this->get_logger(), "NUll frame!");
@@ -424,12 +411,12 @@ namespace phoxi_camera {
         }
 
         rclcpp::Time timeNow = this->now();
- 
+
 
         std_msgs::msg::Header header;
         header.stamp = timeNow;
         header.frame_id = frameId;
-    
+
 
         if (frame->PointCloud.Empty()) {
             RCLCPP_WARN(this->get_logger(), "Empty point cloud!");
@@ -504,7 +491,7 @@ namespace phoxi_camera {
             size_t size = frame->ConfidenceMap.Size.Width * frame->ConfidenceMap.Size.Height * sizeof(float);
             confidence_map->data.resize(size);
             memcpy(confidence_map->data.data(), frame->ConfidenceMap.operator[](0), size);
-            
+
             confidenceMapPub_->publish(*confidence_map);
         }
 
@@ -521,7 +508,7 @@ namespace phoxi_camera {
             size_t size = frame->NormalMap.Size.Width * frame->NormalMap.Size.Height * sizeof(float);
             normal_map->data.resize(size);
             memcpy(normal_map->data.data(), frame->NormalMap.operator[](0), size);
-           
+
             normalMapPub_->publish(*normal_map);
         }
 
@@ -531,7 +518,7 @@ namespace phoxi_camera {
 
 
     void RosInterface::initFromPhoXi() {
-        
+        RCLCPP_WARN(this->get_logger(), "initFromPhoXi start");
         if (!scanner->isConnected()) {
             RCLCPP_WARN(this->get_logger(), "Scanner not connected.");
             return;
@@ -539,13 +526,13 @@ namespace phoxi_camera {
         ///resolution
         pho::api::PhoXiCapturingMode mode = scanner->CapturingMode;
         if ((mode.Resolution.Width == 2064) && (mode.Resolution.Height = 1544)) {
-            resolution_ = 1; 
+            resolution_ = 1;
             this->set_parameter(rclcpp::Parameter("resolution_", resolution_));
         } else {
-            resolution_ = 0; 
+            resolution_ = 0;
             this->set_parameter(rclcpp::Parameter("resolution_", resolution_));
         }
-        
+
 
         pho::api::PhoXiCapturingSettings capturingSettings;
         capturingSettings = scanner->CapturingSettings;
@@ -565,7 +552,7 @@ namespace phoxi_camera {
         send_confidence_map_ = outputSettings.SendConfidenceMap;
         send_depth_map_ = outputSettings.SendDepthMap;
         send_texture_ = outputSettings.SendTexture;
-        
+
 
         this->set_parameter(rclcpp::Parameter("send_point_cloud_", send_point_cloud_));
         this->set_parameter(rclcpp::Parameter("send_normal_map_", send_normal_map_));
@@ -591,7 +578,7 @@ namespace phoxi_camera {
                 int singlePatternExposure_index;
                 this->set_parameter(rclcpp::Parameter("single_pattern_exposure_", singlePatternExposure_index));
                 RCLCPP_INFO(this->get_logger(), "single_pattern_exposure", singlePatternExposure_index);
- 
+
                 RCLCPP_WARN(this->get_logger(), "Can not update Single Pattern Exposure parameter in dynamic reconfigure, set default value from config.");
             }
         } else {
@@ -606,10 +593,10 @@ namespace phoxi_camera {
         this->set_parameter(rclcpp::Parameter("trigger_mode_", trigger_mode_));
         this->set_parameter(rclcpp::Parameter("start_acquisition_", start_acquisition_));
         this->set_parameter(rclcpp::Parameter("timeout_", timeout_));
-
+        RCLCPP_WARN(this->get_logger(), "initFromPhoXi finished");
     }
 
-    bool RosInterface::disconnectCamera(const std::shared_ptr<std_srvs::srv::Empty::Request> req, 
+    bool RosInterface::disconnectCamera(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
                                         std::shared_ptr<std_srvs::srv::Empty::Response> res) {
         try {
             PhoXiInterface::disconnectCamera();
@@ -620,7 +607,7 @@ namespace phoxi_camera {
         return true;
     }
 
-    bool RosInterface::getHardwareIdentification(const std::shared_ptr<phoxi_msgs::srv::GetHardwareIdentification::Request> req, 
+    bool RosInterface::getHardwareIdentification(const std::shared_ptr<phoxi_msgs::srv::GetHardwareIdentification::Request> req,
                                                  std::shared_ptr<phoxi_msgs::srv::GetHardwareIdentification::Response> res) {
         try {
             res->hardware_identification = PhoXiInterface::getHardwareIdentification();
@@ -633,7 +620,7 @@ namespace phoxi_camera {
         return true;
     }
 
-    bool RosInterface::getSupportedCapturingModes(const std::shared_ptr<phoxi_msgs::srv::GetSupportedCapturingModes::Request> req, 
+    bool RosInterface::getSupportedCapturingModes(const std::shared_ptr<phoxi_msgs::srv::GetSupportedCapturingModes::Request> req,
                                                     std::shared_ptr<phoxi_msgs::srv::GetSupportedCapturingModes::Response> res) {
         try {
             std::vector<pho::api::PhoXiCapturingMode> modes = PhoXiInterface::getSupportedCapturingModes();
@@ -652,8 +639,8 @@ namespace phoxi_camera {
         return true;
     }
 
-    bool 
-    RosInterface::getApiVersion(const std::shared_ptr<phoxi_msgs::srv::GetString::Request> req, 
+    bool
+    RosInterface::getApiVersion(const std::shared_ptr<phoxi_msgs::srv::GetString::Request> req,
                                     std::shared_ptr<phoxi_msgs::srv::GetString::Response> res) {
         res->value = PhoXiInterface::getApiVersion();
         res->success = true;
@@ -661,7 +648,7 @@ namespace phoxi_camera {
     }
 
     bool
-    RosInterface::getFirmwareVersion(const std::shared_ptr<phoxi_msgs::srv::GetString::Request> req, 
+    RosInterface::getFirmwareVersion(const std::shared_ptr<phoxi_msgs::srv::GetString::Request> req,
                                      std::shared_ptr<phoxi_msgs::srv::GetString::Response> res) {
         try {
             auto dl = PhoXiInterface::deviceList();
@@ -681,8 +668,8 @@ namespace phoxi_camera {
 
 // #ifndef PHOXI_API_v1_1
 
-    bool 
-    RosInterface::setCoordianteSpace(const std::shared_ptr<phoxi_msgs::srv::SetCoordinatesSpace::Request> req, 
+    bool
+    RosInterface::setCoordianteSpace(const std::shared_ptr<phoxi_msgs::srv::SetCoordinatesSpace::Request> req,
                                          std::shared_ptr<phoxi_msgs::srv::SetCoordinatesSpace::Response> res) {
         try {
             PhoXiInterface::setCoordinateSpace(req->coordinates_space);
@@ -698,14 +685,14 @@ namespace phoxi_camera {
         return true;
     }
 
-    bool 
-    RosInterface::setTransformation(const std::shared_ptr<phoxi_msgs::srv::SetTransformationMatrix::Request> req, 
+    bool
+    RosInterface::setTransformation(const std::shared_ptr<phoxi_msgs::srv::SetTransformationMatrix::Request> req,
                                          std::shared_ptr<phoxi_msgs::srv::SetTransformationMatrix::Response> res) {
         try {
 
             // tf2::Transform tf2Transform;
             Eigen::Affine3d transform = tf2::transformToEigen(req->transform);
-           
+
             // tf2::convert(tf2Transform, transform);
             // tf::transformMsgToEigen(req->transform, transform);
             PhoXiInterface::setTransformation(transform.matrix(), req->coordinates_space, req->set_space,
@@ -714,7 +701,7 @@ namespace phoxi_camera {
             if (req->set_space) {
                 coordinate_space_ = req->coordinates_space;
                 this->set_parameter(rclcpp::Parameter("coordinate_space_", coordinate_space_));
-            }         
+            }
             res->success = true;
             res->message = OKRESPONSE;
         } catch (PhoXiInterfaceException& e) {
@@ -725,7 +712,7 @@ namespace phoxi_camera {
     }
 
     bool
-    RosInterface::saveLastFrame(const std::shared_ptr<phoxi_msgs::srv::SaveLastFrame::Request> req, 
+    RosInterface::saveLastFrame(const std::shared_ptr<phoxi_msgs::srv::SaveLastFrame::Request> req,
                                 std::shared_ptr<phoxi_msgs::srv::SaveLastFrame::Response> res) {
         std::string file_path = req->file_path;
 
@@ -782,7 +769,7 @@ namespace phoxi_camera {
 
 
     // RosInterface::~RosInterface(){
-    // }  
+    // }
 
 
-}                                                                          
+}

@@ -92,7 +92,7 @@ namespace phoxi_camera {
 
 
     protected:
-      
+
 
       int triggerImageid();
       void publishFrame(pho::api::PFrame frame);
@@ -108,14 +108,14 @@ namespace phoxi_camera {
 
       rclcpp::TimerBase::SharedPtr timer_;
 
-      
+
 
       bool latch_topics_;
       int topic_queue_size_;
       bool init_from_config_;
       bool organized_cloud_;
 
-      int resolution_; 
+      int resolution_;
       int scan_multiplier_;
       float confidence_;
       bool send_confidence_map_;
@@ -137,83 +137,83 @@ namespace phoxi_camera {
 
       std::shared_ptr<rclcpp::ParameterEventHandler> param_subscriber_;
       std::shared_ptr<rclcpp::ParameterCallbackHandle> cb_handle_;
-      
+
       void diagnosticCallback(diagnostic_updater::DiagnosticStatusWrapper & status);
 
       void diagnosticTimerCallback();
 
 
-      bool getDeviceList(const std::shared_ptr<phoxi_msgs::srv::GetDeviceList::Request> req, 
+      bool getDeviceList(const std::shared_ptr<phoxi_msgs::srv::GetDeviceList::Request> req,
                          std::shared_ptr<phoxi_msgs::srv::GetDeviceList::Response> res);
 
-      bool isConnected(const std::shared_ptr<phoxi_msgs::srv::IsConnected::Request> req, 
+      bool isConnected(const std::shared_ptr<phoxi_msgs::srv::IsConnected::Request> req,
                        std::shared_ptr<phoxi_msgs::srv::IsConnected::Response> res);
 
-      bool isConnectedV2(const std::shared_ptr<phoxi_msgs::srv::GetBool::Request> req, 
+      bool isConnectedV2(const std::shared_ptr<phoxi_msgs::srv::GetBool::Request> req,
                        std::shared_ptr<phoxi_msgs::srv::GetBool::Response> res);
 
-      bool isAcquiring(const std::shared_ptr<phoxi_msgs::srv::IsAcquiring::Request> req, 
+      bool isAcquiring(const std::shared_ptr<phoxi_msgs::srv::IsAcquiring::Request> req,
                        std::shared_ptr<phoxi_msgs::srv::IsAcquiring::Response> res);
 
-      bool isAcquiringV2(const std::shared_ptr<phoxi_msgs::srv::GetBool::Request> req, 
+      bool isAcquiringV2(const std::shared_ptr<phoxi_msgs::srv::GetBool::Request> req,
                          std::shared_ptr<phoxi_msgs::srv::GetBool::Response> res);
 
-      bool startAcquisition(const std::shared_ptr<std_srvs::srv::Empty::Request> req, 
+      bool startAcquisition(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
                            std::shared_ptr<std_srvs::srv::Empty::Response> res);
 
-      bool startAcquisitionV2(const std::shared_ptr<phoxi_msgs::srv::Empty::Request> req, 
+      bool startAcquisitionV2(const std::shared_ptr<phoxi_msgs::srv::Empty::Request> req,
                              std::shared_ptr<phoxi_msgs::srv::Empty::Response> res);
 
-      bool stopAcquisition(const std::shared_ptr<std_srvs::srv::Empty::Request> req, 
+      bool stopAcquisition(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
                            std::shared_ptr<std_srvs::srv::Empty::Response> res);
 
-      bool stopAcquisitionV2(const std::shared_ptr<phoxi_msgs::srv::Empty::Request> req, 
+      bool stopAcquisitionV2(const std::shared_ptr<phoxi_msgs::srv::Empty::Request> req,
                              std::shared_ptr<phoxi_msgs::srv::Empty::Response> res);
 
-      bool triggerImage(const std::shared_ptr<phoxi_msgs::srv::TriggerImage::Request> req, 
+      bool triggerImage(const std::shared_ptr<phoxi_msgs::srv::TriggerImage::Request> req,
                         std::shared_ptr<phoxi_msgs::srv::TriggerImage::Response> res);
 
-      bool getFrame(const std::shared_ptr<phoxi_msgs::srv::GetFrame::Request> req, 
+      bool getFrame(const std::shared_ptr<phoxi_msgs::srv::GetFrame::Request> req,
                         std::shared_ptr<phoxi_msgs::srv::GetFrame::Response> res);
 
-      bool saveFrame(const std::shared_ptr<phoxi_msgs::srv::SaveFrame::Request> req, 
+      bool saveFrame(const std::shared_ptr<phoxi_msgs::srv::SaveFrame::Request> req,
                         std::shared_ptr<phoxi_msgs::srv::SaveFrame::Response> res);
 
-      bool connectCamera(const std::shared_ptr<phoxi_msgs::srv::ConnectCamera::Request> req, 
+      bool connectCamera(const std::shared_ptr<phoxi_msgs::srv::ConnectCamera::Request> req,
                         std::shared_ptr<phoxi_msgs::srv::ConnectCamera::Response> res);
 
       void connectCameraV2(std::string HWIdentification,
                            pho::api::PhoXiTriggerMode mode = pho::api::PhoXiTriggerMode::Software,
                            bool startAcquisition = true);
 
-      bool disconnectCamera(const std::shared_ptr<std_srvs::srv::Empty::Request> req, 
+      bool disconnectCamera(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
                             std::shared_ptr<std_srvs::srv::Empty::Response> res);
 
-      bool getHardwareIdentification(const std::shared_ptr<phoxi_msgs::srv::GetHardwareIdentification::Request> req, 
+      bool getHardwareIdentification(const std::shared_ptr<phoxi_msgs::srv::GetHardwareIdentification::Request> req,
                                     std::shared_ptr<phoxi_msgs::srv::GetHardwareIdentification::Response> res);
 
-      bool getSupportedCapturingModes(const std::shared_ptr<phoxi_msgs::srv::GetSupportedCapturingModes::Request> req, 
+      bool getSupportedCapturingModes(const std::shared_ptr<phoxi_msgs::srv::GetSupportedCapturingModes::Request> req,
                                     std::shared_ptr<phoxi_msgs::srv::GetSupportedCapturingModes::Response> res);
 
-      bool getApiVersion(const std::shared_ptr<phoxi_msgs::srv::GetString::Request> req, 
+      bool getApiVersion(const std::shared_ptr<phoxi_msgs::srv::GetString::Request> req,
                          std::shared_ptr<phoxi_msgs::srv::GetString::Response> res);
 
-      bool getFirmwareVersion(const std::shared_ptr<phoxi_msgs::srv::GetString::Request> req, 
+      bool getFirmwareVersion(const std::shared_ptr<phoxi_msgs::srv::GetString::Request> req,
                               std::shared_ptr<phoxi_msgs::srv::GetString::Response> res);
 
-      bool setCoordianteSpace(const std::shared_ptr<phoxi_msgs::srv::SetCoordinatesSpace::Request> req, 
+      bool setCoordianteSpace(const std::shared_ptr<phoxi_msgs::srv::SetCoordinatesSpace::Request> req,
                               std::shared_ptr<phoxi_msgs::srv::SetCoordinatesSpace::Response> res);
 
-      bool setTransformation(const std::shared_ptr<phoxi_msgs::srv::SetTransformationMatrix::Request> req, 
+      bool setTransformation(const std::shared_ptr<phoxi_msgs::srv::SetTransformationMatrix::Request> req,
                              std::shared_ptr<phoxi_msgs::srv::SetTransformationMatrix::Response> res);
-                    
-      bool saveLastFrame(const std::shared_ptr<phoxi_msgs::srv::SaveLastFrame::Request> req, 
+
+      bool saveLastFrame(const std::shared_ptr<phoxi_msgs::srv::SaveLastFrame::Request> req,
                          std::shared_ptr<phoxi_msgs::srv::SaveLastFrame::Response> res);
 
 
 
     private:
- 
+
       rclcpp::Service<phoxi_msgs::srv::GetDeviceList>::SharedPtr getDeviceListService_;
       rclcpp::Service<phoxi_msgs::srv::IsConnected>::SharedPtr isConnectedService_;
       rclcpp::Service<phoxi_msgs::srv::GetBool>::SharedPtr isConnectedServiceV2_;
@@ -236,9 +236,9 @@ namespace phoxi_camera {
       rclcpp::Service<phoxi_msgs::srv::SetTransformationMatrix>::SharedPtr setTransformationService_;
       rclcpp::Service<phoxi_msgs::srv::SaveLastFrame>::SharedPtr saveLastFrameService_;
 
-      
 
-    //ROS2 
+
+    //ROS2
     rclcpp::Node::SharedPtr node_;
 
     //ROS Topic
@@ -251,7 +251,7 @@ namespace phoxi_camera {
 
 
     //diagnostic
-    
+
     // diagnostic_updater::FunctionDiagnosticTask PhoXi3DscannerDiagnosticTask;
     rclcpp::TimerBase::SharedPtr diagnosticTimer;
     // rclcpp::TimerBase::SharedPtr timer_;

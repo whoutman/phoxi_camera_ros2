@@ -36,13 +36,12 @@ int main(int argc, char** argv) {
 
 
     auto node = std::make_shared<phoxi_camera::RosInterface>();
-    
+
 
     rclcpp::spin(node);
 
     rclcpp::shutdown();
-    
+
 
     return 0;
 }
-

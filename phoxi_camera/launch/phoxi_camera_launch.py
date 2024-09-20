@@ -16,7 +16,7 @@ configurable_parameters = [{'name': 'start_acquisition_',            'default': 
                            {'name': 'log_level',                     'default': 'info', 'description': 'debug log level [DEBUG|INFO|WARN|ERROR|FATAL]'},
                            {'name': 'config_file',                   'default': "''", 'description': 'yaml config file'},
 
-                           {'name': 'scanner_id_',                   'default': '', 'description': 'scanner id '},
+                           {'name': 'scanner_id_',                   'default': 'InstalledExamples-color-example', 'description': 'scanner id '},
                            {'name': 'frame_id',                      'default': 'PhoXi3Dscanner_sensor', 'description': 'frame id'},
                            {'name': 'latch_topics_',                 'default': 'false', 'description': ''},
                            {'name': 'topic_queue_size_',             'default': '1', 'description': ''},
@@ -38,7 +38,7 @@ configurable_parameters = [{'name': 'start_acquisition_',            'default': 
                            {'name': 'single_pattern_exposure_',      'default': '2', 'description': ''},
                            {'name': 'camera_only_mode_',             'default': 'false', 'description': ''},
 
-                          ]     
+                          ]
 
 
 
@@ -52,7 +52,7 @@ def set_configurable_parameters(parameters):
 def yaml_to_dict(path_to_yaml):
     with open(path_to_yaml, "r") as f:
         return yaml.load(f, Loader=yaml.SafeLoader)
-    
+
 
 def launch_setup(context, *args, **kwargs):
     _config_file = LaunchConfiguration("config_file").perform(context)
@@ -70,6 +70,7 @@ def launch_setup(context, *args, **kwargs):
                         ],
             output='screen',
             arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
+            # prefix=['gdbserver localhost:3000'],
             emulate_tty=True,
             )
     ]
@@ -84,6 +85,3 @@ def generate_launch_description():
 
 if __name__ == '__main__':
     generate_launch_description()
-
-
-

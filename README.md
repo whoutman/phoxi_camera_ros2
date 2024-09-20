@@ -1,5 +1,5 @@
 # phoxi_camera_ros2
-This is the development for the ros2 driver of Photoneo Phoxi 3D scanner 
+This is the development for the ros2 driver of Photoneo Phoxi 3D scanner
 (refer to its ROS1 driver https://github.com/photoneo/phoxi_camera)
 ![image](https://github.com/zyadan/phoxi_camera_ros2/assets/24379540/846a5034-8807-4f2e-a941-1a0cb3011e51)
 
@@ -58,14 +58,14 @@ cp /opt/Photoneo/PhoXiControl-1.10.0/API/lib/libPhoXi_API_gcc11.3.0_Release.so.1
 ~/frame_id:                    - Frame id to which captured data relies to. Default value: "PhoXi3Dscanner_sensor"
 ~/latch_topics_                 - Default value: false
 ~/topic_queue_size_             - Default value: 1
-~/init_from_config_             - Default value: false # if true all following parameters will be initialized from this config otherwise from 
+~/init_from_config_             - Default value: false # if true all following parameters will be initialized from this config otherwise from
                                   PhoXi control application.
 ~/organized_cloud_               - Default value: false  # if true organized point cloud will be published, other otherwise unorganized
 
-  
+
 ~/log_level                     - Default value: info    # debug log level [DEBUG|INFO|WARN|ERROR|FATAL]
 ~/config_file                   - Default value:         # yaml config file
-~/start_acquisition_            - Default value: false 
+~/start_acquisition_            - Default value: false
 ~/stop_acquisition_             - Default value: false
 ~/resolution_                   - Default value:  1
 ~/scan_multiplier_              - Default value:  1
@@ -140,9 +140,3 @@ ros2 launch phoxi_camera phoxi_camera_launch.py
 
 * Use available ROS2 services to control your 3D scanner
 ![image](https://github.com/zyadan/phoxi_camera_ros2/assets/24379540/71e72278-f8cb-4902-88d3-d299fee605f0)
-
-
-
-
-
-

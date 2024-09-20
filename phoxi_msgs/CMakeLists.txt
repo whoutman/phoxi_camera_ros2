@@ -40,7 +40,7 @@ set(srv_files
 
 set(msg_files
   "msg/DeviceConnectionStatus.msg"
-  "msg/DeviceInformation.msg" 
+  "msg/DeviceInformation.msg"
   "msg/DeviceType.msg"
   "msg/PhoXiSize.msg"
 )
