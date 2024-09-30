@@ -7,6 +7,13 @@
 
 #define OKRESPONSE "Ok"
 
+#include <boost/thread/mutex.hpp>
+// #include <boost/thread.hpp>
+// #include <boost/thread/scoped_thread.hpp>
+#include <functional>
+#include <memory>
+#include <thread>
+
 //ros2
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
@@ -26,14 +33,6 @@
 #include <tf2_eigen/tf2_eigen.h>
 
 
-//dynamic reconfigure
-// #include <dynamic_reconfigure/server.h>
-// #include <phoxi_camera/phoxi_cameraConfig.h>
-
-//diagnostic updater
-#include <boost/thread/mutex.hpp>
-// #include <diagnostic_updater/diagnostic_updater.h>
-
 //messages
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/image_encodings.hpp>
@@ -45,9 +44,10 @@
 #include "sensor_msgs/image_encodings.hpp"
 #include <diagnostic_updater/diagnostic_updater.hpp>
 
-
+#include "rclcpp_action/rclcpp_action.hpp"
 
 #include <phoxi_camera/PhoXiInterface.h>
+#include <phoxi_msgs/action/trigger.hpp>
 #include <phoxi_msgs/srv/get_device_list.hpp>
 #include <phoxi_msgs/srv/connect_camera.hpp>
 #include <phoxi_msgs/srv/is_connected.hpp>
@@ -71,8 +71,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
-
-
+#include <functional>
 
 #include <builtin_interfaces/msg/time.hpp>
 
@@ -81,16 +80,19 @@
 #include <phoxi_camera/RosConversions.h>
 #include <rclcpp_components/register_node_macro.hpp>
 
-using namespace std::chrono_literals;
 
+using namespace std::chrono_literals;
+using namespace std::placeholders;
 
 namespace phoxi_camera {
 
   class RosInterface : protected PhoXiInterface, public rclcpp::Node{
+
     public:
+      using Trigger = phoxi_msgs::action::Trigger;
+      using GoalHandleTrigger = rclcpp_action::ServerGoalHandle<Trigger>;
+
       RosInterface(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
-
-
     protected:
 
 
@@ -210,7 +212,13 @@ namespace phoxi_camera {
       bool saveLastFrame(const std::shared_ptr<phoxi_msgs::srv::SaveLastFrame::Request> req,
                          std::shared_ptr<phoxi_msgs::srv::SaveLastFrame::Response> res);
 
+    rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const Trigger::Goal> goal) const;
 
+    rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<GoalHandleTrigger> goal_handle);
+
+    void handle_accepted(const std::shared_ptr<GoalHandleTrigger> goal_handle);
+
+    void execute(const std::shared_ptr<GoalHandleTrigger> goal_handle);
 
     private:
 
@@ -237,6 +245,8 @@ namespace phoxi_camera {
       rclcpp::Service<phoxi_msgs::srv::SaveLastFrame>::SharedPtr saveLastFrameService_;
 
 
+    // actions
+    rclcpp_action::Server<phoxi_msgs::action::Trigger>::SharedPtr action_server_;
 
     //ROS2
     rclcpp::Node::SharedPtr node_;
@@ -254,6 +264,7 @@ namespace phoxi_camera {
 
     // diagnostic_updater::FunctionDiagnosticTask PhoXi3DscannerDiagnosticTask;
     rclcpp::TimerBase::SharedPtr diagnosticTimer;
+    // boost::scoped_thread<> backgr_thr_;
     // rclcpp::TimerBase::SharedPtr timer_;
         // rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher_;
       };

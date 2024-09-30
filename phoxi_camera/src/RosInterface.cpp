@@ -1,10 +1,14 @@
 
-#include "phoxi_camera/ros_Interface.hpp"
+#include "phoxi_camera/ros_interface.hpp"
+
+using namespace phoxi_msgs::action;
+using GoalHandleTrigger = rclcpp_action::ServerGoalHandle<Trigger>;
 
 namespace phoxi_camera {
 
     RosInterface::RosInterface(const rclcpp::NodeOptions& options)
         : Node("phoxi_camera_node", options) {
+
         this->declare_parameter<bool>("start_acquisition_", true);
         this->declare_parameter<bool>("stop_acquisition_", false);
 
@@ -89,6 +93,13 @@ namespace phoxi_camera {
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Ready to get_device_list");
 
+        this->action_server_ = rclcpp_action::create_server<Trigger>(
+            this,
+            "get_frame",
+            std::bind(&RosInterface::handle_goal, this, _1, _2),
+            std::bind(&RosInterface::handle_cancel, this, _1),
+            std::bind(&RosInterface::handle_accepted, this, _1));
+
         diagnosticTimer = this->create_wall_timer(5000ms, std::bind(&RosInterface::diagnosticTimerCallback, this));
 
         this->get_parameter_or<std::string>("frame_id", frameId, "PhoXi3Dscanner_sensor");
@@ -113,7 +124,65 @@ namespace phoxi_camera {
         }
     }
 
+    rclcpp_action::GoalResponse RosInterface::handle_goal(
+    const rclcpp_action::GoalUUID & uuid,
+    std::shared_ptr<const Trigger::Goal> goal) const
+    {
+        RCLCPP_DEBUG(this->get_logger(), "Received goal request.");
+        (void) uuid;
+        (void) goal;
+        return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+    }
 
+    rclcpp_action::CancelResponse RosInterface::handle_cancel(const std::shared_ptr<GoalHandleTrigger> goal_handle)
+    {
+        RCLCPP_INFO(this->get_logger(), "Received request to cancel goal.");
+        RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
+        (void)goal_handle;
+        return rclcpp_action::CancelResponse::ACCEPT;
+    }
+
+
+    void RosInterface::handle_accepted(const std::shared_ptr<GoalHandleTrigger> goal_handle)
+    {
+    // if (backgr_thr_.joinable()) {
+    //     backgr_thr_.join();
+    // }
+    // this needs to return quickly to avoid blocking the executor, so spin up a new thread
+    // backgr_thr_ = boost::scoped_thread{boost::thread{std::bind(
+    //         &RosInterface::execute, this, std::placeholders::_1), goal_handle}};
+    std::thread{std::bind(&RosInterface::execute, this, _1), goal_handle}.detach();
+    }
+
+
+    void RosInterface::execute(const std::shared_ptr<GoalHandleTrigger> goal_handle)
+    {
+        auto result = std::make_shared<Trigger::Result>();
+        try {
+            pho::api::PFrame frame = getPFrame(-1);
+            publishFrame(frame);
+
+
+            if (!frame) {
+                result->message = "Null frame!";
+                goal_handle->abort(result);
+                return;
+            } else {
+                result->message = OKRESPONSE;
+            }
+
+        } catch (PhoXiInterfaceException& e) {
+            result->message = e.what();
+            goal_handle->abort(result);
+            return;
+        }
+
+        if (rclcpp::ok()) {
+
+            goal_handle->succeed(result);
+            RCLCPP_INFO(this->get_logger(), "Goal succeeded");
+        }
+    }
 
     void
     RosInterface::diagnosticTimerCallback() {
@@ -125,7 +194,7 @@ namespace phoxi_camera {
                                 std::shared_ptr<phoxi_msgs::srv::GetDeviceList::Response> res) {
         try {
             res->out_id = PhoXiInterface::cameraList();
-            phoXiDeviceInforamtionToRosMsg(PhoXiInterface::deviceList(), res->device_information_list);
+            phoXiDevicesInformationToRosMsg(PhoXiInterface::deviceList(), res->device_information_list);
             res->len = res->out_id.size();
             res->success = true;
             res->message = OKRESPONSE;

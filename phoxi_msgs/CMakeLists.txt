@@ -18,6 +18,9 @@ find_package(rosidl_default_generators REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+set(action_files
+  "action/Trigger.action"
+)
 
 set(srv_files
   "srv/Deprecated/Empty.srv"      #deprecated
@@ -47,6 +50,7 @@ set(msg_files
 
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  ${action_files}
   ${msg_files}
   ${srv_files}
 

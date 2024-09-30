@@ -38,64 +38,57 @@ set(DEPENDENCIES
 
 find_package(PhoXi REQUIRED CONFIG PATHS "$ENV{PHOXI_CONTROL_PATH}")
 find_package(ament_cmake REQUIRED)
+#find_package(Boost REQUIRED COMPONENTS system thread program_options)
 
 foreach(Dependency IN ITEMS ${DEPENDENCIES})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
-set(INCLUDES
+#set(INCLUDES
+#    include/phoxi_camera/ros_interface.hpp
+#    include/phoxi_camera/PhoXiInterface.h
+#    include/phoxi_camera/PhoXiDeviceInformation.h
+#    include/phoxi_camera/PhoXiException.h
+#    include/phoxi_camera/RosConversions.h
+#    include/phoxi_camera/PhoXiConversions.h
+#)
 
-    include/phoxi_camera/ros_interface.hpp
-    include/phoxi_camera/PhoXiInterface.h
-    include/phoxi_camera/PhoXiDeviceInformation.h
-    include/phoxi_camera/PhoXiException.h
-    include/phoxi_camera/RosConversions.h
-    include/phoxi_camera/PhoXiConversions.h
-
-)
-
-
-set(SOURCES
-    src/RosInterface.cpp
-    src/PhoXiInterface.cpp
-    )
-
-
-add_executable(phoxi_camera_node src/phoxi_camera_node.cpp)
-
-
-target_compile_options(phoxi_camera_node PRIVATE -g)
-
-add_library(${PROJECT_NAME} SHARED
-  ${SOURCES}
-  )
-
-ament_target_dependencies(${PROJECT_NAME}
-  ${DEPENDENCIES}
-)
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-  include
+set(INCLUDE_DIRECTORIES
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  #${Boost_INCLUDE_DIR}
+  #${Boost_LIBRARIES}
   ${PHOXI_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
-
 )
 
+#message(Boost_LIBRARIES="${Boost_LIBRARIES}")
+#message(Boost_INCLUDE_DIR="${Boost_INCLUDE_DIR}")
+#message(Boost_FOUND="${Boost_FOUND}")
 
 
+
+add_library(${PROJECT_NAME} SHARED src/RosInterface.cpp src/PhoXiInterface.cpp)
+ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
+target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)
+target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRECTORIES})
+#target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${PHOXI_LIBRARY} )
+target_link_libraries(${PROJECT_NAME} ${PHOXI_LIBRARY} )
+
+add_executable(phoxi_camera_node src/phoxi_camera_node.cpp)
+ament_target_dependencies(phoxi_camera_node ${DEPENDENCIES})
+target_compile_features(phoxi_camera_node PUBLIC c_std_99 cxx_std_17)
+target_include_directories(phoxi_camera_node PUBLIC ${INCLUDE_DIRECTORIES})
 target_link_libraries(phoxi_camera_node
-  ${PROJECT_NAME}
   ${PHOXI_LIBRARY}
   ${PCL_LIBRARIES}
+  #${Boost_LIBRARIES}
+  ${PROJECT_NAME}
+  )
+target_compile_options(phoxi_camera_node PRIVATE -g)
 
-)
-
-
-
-install(TARGETS
-  phoxi_camera_node
-  DESTINATION lib/${PROJECT_NAME})
+ install(TARGETS phoxi_camera_node DESTINATION lib/${PROJECT_NAME})
 
 
 install(
@@ -104,8 +97,8 @@ install(
 )
 
 install(TARGETS
-phoxi_camera
-DESTINATION lib)
+phoxi_camera_node
+DESTINATION lib/${PROJECT_NAME})
 
 ament_export_dependencies(${DEPENDENCIES})
 ament_export_include_directories(include)

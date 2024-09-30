@@ -8,7 +8,7 @@
 #include <phoxi_msgs/msg/device_information.hpp>
 #include <phoxi_camera/PhoXiDeviceInformation.h>
 
-void phoXiDeviceInforamtionToRosMsg(const phoxi_camera::PhoXiDeviceInformation& phoXiDeviceInformation,
+void phoXiDeviceInformationToRosMsg(const phoxi_camera::PhoXiDeviceInformation& phoXiDeviceInformation,
                                     phoxi_msgs::msg::DeviceInformation& deviceInformationMsg) {
 
     deviceInformationMsg.name = phoXiDeviceInformation.name;
@@ -19,15 +19,15 @@ void phoXiDeviceInforamtionToRosMsg(const phoxi_camera::PhoXiDeviceInformation& 
     deviceInformationMsg.firmwareversion = phoXiDeviceInformation.firmwareversion;
 }
 
-void phoXiDeviceInforamtionToRosMsg(const std::vector<phoxi_camera::PhoXiDeviceInformation>& phoXiDeviceInformation,
+void phoXiDevicesInformationToRosMsg(const std::vector<phoxi_camera::PhoXiDeviceInformation>& phoXiDeviceInformation,
                                     std::vector<phoxi_msgs::msg::DeviceInformation>& deviceInformationMsg) {
     deviceInformationMsg.clear();
     deviceInformationMsg.resize(phoXiDeviceInformation.size());
     for (const auto& device : phoXiDeviceInformation) {
-        phoXiDeviceInforamtionToRosMsg(device, deviceInformationMsg.back());
+        phoXiDeviceInformationToRosMsg(device, deviceInformationMsg.back());
     }
     for (int i = 0; i < phoXiDeviceInformation.size(); ++i) {
-        phoXiDeviceInforamtionToRosMsg(phoXiDeviceInformation[i], deviceInformationMsg[i]);
+        phoXiDeviceInformationToRosMsg(phoXiDeviceInformation[i], deviceInformationMsg[i]);
     }
 }
 
